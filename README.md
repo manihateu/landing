@@ -10,7 +10,7 @@ docker compose build --no-cache
 docker compose up -d
 ```
 
-Сборка использует **Alpine + Yarn** (`yarn.lock`, не `npm`). На сервере нужен актуальный код с `Dockerfile`, `yarn.lock` и `.yarnrc`.
+Сборка использует **Debian slim + Yarn (corepack)**. На VPS с проблемами CDN в Dockerfile стоит зеркало Yandex для `apt`.
 
 При старте сначала запускается сервис `migrate` (создаёт таблицы в PostgreSQL), затем `app`.
 

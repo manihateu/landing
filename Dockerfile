@@ -1,7 +1,31 @@
-FROM node:22-alpine AS base
+FROM node:22-bookworm-slim AS base
 WORKDIR /app
-ENV NEXT_TELEMETRY_DISABLED=1
-RUN apk add --no-cache libc6-compat openssl ca-certificates yarn
+ENV NEXT_TELEMETRY_DISABLED=1 \
+    DEBIAN_FRONTEND=noninteractive
+
+# Зеркало + повторы: на части VPS CDN Alpine/Debian недоступен (TLS errors)
+RUN set -eux; \
+    if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
+      sed -i \
+        -e 's|http://deb.debian.org/debian|http://mirror.yandex.ru/debian|g' \
+        -e 's|http://deb.debian.org/debian-security|http://mirror.yandex.ru/debian-security|g' \
+        /etc/apt/sources.list.d/debian.sources; \
+    elif [ -f /etc/apt/sources.list ]; then \
+      sed -i \
+        -e 's|http://deb.debian.org/debian|http://mirror.yandex.ru/debian|g' \
+        -e 's|http://security.debian.org/debian-security|http://mirror.yandex.ru/debian-security|g' \
+        /etc/apt/sources.list; \
+    fi; \
+    for attempt in 1 2 3; do \
+      apt-get update && \
+      apt-get install -y --no-install-recommends openssl ca-certificates && \
+      break; \
+      echo "apt retry ${attempt}..."; \
+      sleep 5; \
+    done; \
+    rm -rf /var/lib/apt/lists/*; \
+    corepack enable; \
+    corepack prepare yarn@1.22.22 --activate
 
 FROM base AS deps
 COPY package.json yarn.lock .yarnrc ./
@@ -27,8 +51,8 @@ CMD ["yarn", "prisma", "db", "push", "--skip-generate"]
 FROM base AS runner
 ENV NODE_ENV=production
 
-RUN addgroup -g 1001 -S nodejs \
-  && adduser -S -u 1001 -G nodejs nextjs
+RUN groupadd --system --gid 1001 nodejs \
+  && useradd --system --uid 1001 --gid nodejs nextjs
 
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
