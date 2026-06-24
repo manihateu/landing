@@ -19,11 +19,11 @@ docker compose up -d
 ## Запуск (локально)
 
 ```bash
-npm install
+yarn install
 cp .env.example .env
 # Настройте DATABASE_URL и GUEST_PAGE_PASSWORD в .env
-npx prisma db push
-npm run dev
+yarn prisma db push
+yarn dev
 ```
 
 Сайт: [http://localhost:3000](http://localhost:3000)  
