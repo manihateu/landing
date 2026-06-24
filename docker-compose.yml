@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: zagz
+      POSTGRES_PASSWORD: zagz_secret
+      POSTGRES_DB: zagz
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zagz -d zagz"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build:
+      context: .
+      target: migrate
+    command: npx prisma db push --skip-generate
+    environment:
+      DATABASE_URL: postgresql://zagz:zagz_secret@db:5432/zagz?schema=public
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:11435:3000"
+    environment:
+      DATABASE_URL: postgresql://zagz:zagz_secret@db:5432/zagz?schema=public
+      GUEST_PAGE_PASSWORD: ${GUEST_PAGE_PASSWORD:-wedding2026}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  postgres_data:
