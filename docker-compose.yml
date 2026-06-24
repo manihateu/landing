@@ -29,12 +29,15 @@ services:
     build:
       context: .
       target: runner
+      args:
+        NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: ${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}
     restart: unless-stopped
     ports:
       - "127.0.0.1:11435:3000"
     environment:
       DATABASE_URL: postgresql://zagz:zagz_secret@db:5432/zagz?schema=public
       GUEST_PAGE_PASSWORD: ${GUEST_PAGE_PASSWORD:-wedding2026}
+      NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: ${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}
     depends_on:
       migrate:
         condition: service_completed_successfully

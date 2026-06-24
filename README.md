@@ -6,6 +6,7 @@
 
 ```bash
 echo "GUEST_PAGE_PASSWORD=ваш_пароль" > .env
+echo "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=$(openssl rand -base64 32)" >> .env
 docker compose build --no-cache
 docker compose up -d
 ```
@@ -37,6 +38,7 @@ yarn dev
 |---|---|
 | `DATABASE_URL` | Строка подключения PostgreSQL |
 | `GUEST_PAGE_PASSWORD` | Пароль для страницы `/guest` |
+| `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Ключ Server Actions (build + runtime). Сгенерировать: `openssl rand -base64 32`. **Не менять** после деплоя без полной пересборки |
 
 ## Что настроить
 

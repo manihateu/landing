@@ -1,7 +1,21 @@
 import type { NextConfig } from "next";
 
+if (process.env.CI === "1" && !process.env.NEXT_SERVER_ACTIONS_ENCRYPTION_KEY) {
+  throw new Error(
+    "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY is required for production Docker builds. Generate: openssl rand -base64 32",
+  );
+}
+
 const nextConfig: NextConfig = {
   output: "standalone",
+  serverActions: {
+    allowedOrigins: [
+      "polinaandnikita.ru",
+      "www.polinaandnikita.ru",
+      "localhost:11435",
+      "localhost:3000",
+    ],
+  },
   images: {
     remotePatterns: [
       {

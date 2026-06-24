@@ -32,9 +32,11 @@ COPY package.json yarn.lock .yarnrc ./
 RUN yarn install --frozen-lockfile
 
 FROM base AS builder
+ARG NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
 ENV NODE_ENV=production
 ENV CI=1
 ENV DATABASE_URL="postgresql://zagz:zagz_secret@db:5432/zagz?schema=public"
+ENV NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
