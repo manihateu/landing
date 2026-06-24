@@ -6,13 +6,15 @@
 
 ```bash
 echo "GUEST_PAGE_PASSWORD=ваш_пароль" > .env
-docker compose build --no-cache app
+docker compose build --no-cache
 docker compose up -d
 ```
 
+Сборка использует **Alpine + Yarn** (`yarn.lock`, не `npm`). На сервере нужен актуальный код с `Dockerfile`, `yarn.lock` и `.yarnrc`.
+
 При старте сначала запускается сервис `migrate` (создаёт таблицы в PostgreSQL), затем `app`.
 
-> **Windows:** если сборка падает с `EPERM`, убедитесь что Docker Desktop запущен, и проект лежит в WSL/Linux-диске (не на `C:\` через `/mnt/c`). Также попробуйте: `docker compose build --no-cache app`.
+> **Windows:** если сборка падает с `EPERM`, убедитесь что Docker Desktop запущен, и проект лежит в WSL/Linux-диске (не на `C:\` через `/mnt/c`). Также попробуйте: `docker compose build --no-cache`.
 
 Сайт: [http://localhost:11435](http://localhost:11435) (порт настроен в `docker-compose.yml`)
 

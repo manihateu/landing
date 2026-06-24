@@ -9,3 +9,4 @@ README.gitlab.md
 docker-compose.yml
 Dockerfile
 .dockerignore
+postgres_data

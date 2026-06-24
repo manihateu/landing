@@ -18,7 +18,6 @@ services:
     build:
       context: .
       target: migrate
-    command: yarn prisma db push --skip-generate
     environment:
       DATABASE_URL: postgresql://zagz:zagz_secret@db:5432/zagz?schema=public
     depends_on:

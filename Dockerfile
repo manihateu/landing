@@ -1,12 +1,10 @@
 FROM node:22-alpine AS base
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN apk add --no-cache libc6-compat openssl ca-certificates \
-  && corepack enable \
-  && corepack prepare yarn@1.22.22 --activate
+RUN apk add --no-cache libc6-compat openssl ca-certificates yarn
 
 FROM base AS deps
-COPY package.json yarn.lock ./
+COPY package.json yarn.lock .yarnrc ./
 RUN yarn install --frozen-lockfile
 
 FROM base AS builder
@@ -17,16 +15,14 @@ ENV DATABASE_URL="postgresql://zagz:zagz_secret@db:5432/zagz?schema=public"
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-RUN chmod -R u+w /app
-
 RUN yarn prisma generate
-
-RUN mkdir -p .next/cache && chmod -R 777 .next
-
 RUN yarn build
 
-# Отдельный образ для миграций (полный prisma CLI)
-FROM builder AS migrate
+FROM base AS migrate
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json yarn.lock .yarnrc ./
+COPY prisma ./prisma
+CMD ["yarn", "prisma", "db", "push", "--skip-generate"]
 
 FROM base AS runner
 ENV NODE_ENV=production
